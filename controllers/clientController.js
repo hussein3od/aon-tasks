@@ -54,9 +54,52 @@ const getBalance = async (clientId) => {
   }
   return result.rows[0];
 };
+const topUpClient = async (req, res) => {
+  const { id } = req.params;
+  const { amount } = req.body;
+
+  if (!amount || isNaN(amount) || amount <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'المبلغ غير صالح',
+    });
+  }
+
+  try {
+    const clientRes = await db.query(`SELECT balance FROM client WHERE id = ${id}`);
+
+    if (clientRes.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'العميل غير موجود',
+      });
+    }
+
+    const oldBalance = parseFloat(clientRes.rows[0].balance);
+    const newBalance = oldBalance + parseFloat(amount);
+
+    await db.query(
+      `UPDATE client SET balance = ${newBalance} WHERE id = ${id}`
+    );
+
+    res.json({
+      success: true,
+      id,
+      oldBalance,
+      newBalance,
+    });
+  } catch (err) {
+    console.error('POST /client/:id/topup error:', err.message);
+    res.status(500).json({
+      success: false,
+      message: 'حدث خطأ أثناء إيداع الرصيد',
+    });
+  }
+};
 
 module.exports = {
   register,
   login,
   getBalance,
+  topUpClient,
 };

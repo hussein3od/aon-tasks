@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { register, login, getBalance } = require("../controllers/clientController");
+const { register, login, getBalance, topUpClient } = require("../controllers/clientController");
 
 router.post("/register", async (req, res) => {
   try {
@@ -53,5 +53,7 @@ router.get('/:id/balance', async (req, res) => {
     return res.status(500).json({ message: 'اكو مشكله بالدنيا....' });
   }
 });
+
+router.post('/:id/topup', topUpClient);
 
 module.exports = router;
